@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Board, CellValue, GameState, Player } from '@/types';
+import { supabase } from '@/lib/supabase';
 
 const WINNING_LINES = [
   [0, 1, 2],
@@ -37,6 +38,17 @@ const initialState: GameState = {
   scores: { X: 0, O: 0 },
 };
 
+async function saveGameResult(winner: Player | null, isDraw: boolean, board: Board): Promise<void> {
+  if (!supabase) return;
+  await supabase.from('games').insert([
+    {
+      winner: winner ?? null,
+      is_draw: isDraw,
+      board: JSON.stringify(board),
+    },
+  ]);
+}
+
 export function useGame() {
   const [gameState, setGameState] = useState<GameState>(initialState);
 
@@ -52,6 +64,7 @@ export function useGame() {
       const { winner, winningLine } = checkWinner(newBoard);
 
       if (winner) {
+        saveGameResult(winner, false, newBoard);
         return {
           ...prev,
           board: newBoard,
@@ -66,6 +79,7 @@ export function useGame() {
       }
 
       if (checkDraw(newBoard)) {
+        saveGameResult(null, true, newBoard);
         return {
           ...prev,
           board: newBoard,
