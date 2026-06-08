@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Board, CellValue, GameState, Player } from '@/types';
+import { Board, GameState, Player } from '@/types';
 import { supabase } from '@/lib/supabase';
 
 const WINNING_LINES = [
